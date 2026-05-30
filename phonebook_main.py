@@ -1,4 +1,5 @@
-from GiaBach import Node, LinkedList
-import Arsene
+import Linked_List 
+import Contactlogic
 import diyor
 import tamjit
+
