@@ -1,4 +1,4 @@
-from tamjit import HashTable
+from hashtable import HashTable
 from Contactlogic import add_contact, search_contact, delete_contact, update_contact
 
 
