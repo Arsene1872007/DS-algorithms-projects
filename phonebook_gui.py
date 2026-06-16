@@ -2,6 +2,7 @@ import customtkinter as ctk
 from tkinter import messagebox
 from hashtable import HashTable
 from Contactlogic import add_contact, delete_contact, update_contact
+from validation import strip_non_digits
 
 # ── Color Palette ─────────────────────────────────────────────────────────────
 ctk.set_appearance_mode("dark")
@@ -102,7 +103,7 @@ class PhonebookApp(ctk.CTk):
     # ── Phone digit enforcement ───────────────────────────────────────────────
     def _enforce_digits_only(self, event=None):
         text = self.entry_phone.get()
-        clean = "".join(ch for ch in text if ch.isdigit())
+        clean = strip_non_digits(text)
         if text != clean:
             self._show_toast("Digits only — no letters or symbols.", "error")
             cursor = self.entry_phone.index("insert")
