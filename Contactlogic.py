@@ -6,6 +6,9 @@ def add_contact(hash_table, name, phone_no):
         return "Invalid name"
     if not validate_phone(phone_no):
         return "Invalid phone number"
+    matches = hash_table.search(name)
+    if any(c.phone_no == phone_no for c in matches):
+        return f"Contact '{name}' with this number already exists"
     hash_table.insert(name, phone_no)
     return f"Contact '{name}' added successfully"
 
