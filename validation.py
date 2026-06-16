@@ -1,9 +1,5 @@
-import re
-
-
 def validate_phone(phone_no):
-    checkdigits = re.sub(r"[\s\-\+]", "", phone_no)
-    return checkdigits.isdigit() and len(checkdigits) >= 10
+    return phone_no.isdigit() and len(phone_no) >= 10
 
 
 def validate_name(name):
