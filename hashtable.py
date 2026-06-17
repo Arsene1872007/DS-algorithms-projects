@@ -1,4 +1,5 @@
 class Contact:
+    # Creates a contact node holding a name and phone number, linked to the next node in its bucket.
     def __init__(self, name, phone_no):
         self.name = name
         self.phone_no = phone_no
@@ -6,13 +7,16 @@ class Contact:
 
 
 class HashTable:
+    # Creates a hash table with a fixed number of empty buckets.
     def __init__(self, size=10):
         self.size = size
         self.buckets = [None] * size
 
+    # Computes the bucket index for a key by summing character codes and taking the modulus of the table size.
     def hash_function(self, key):
         return sum(ord(char) for char in key.lower()) % self.size
 
+    # Adds a new contact to the bucket for its name, appending to the end of any existing chain.
     def insert(self, name, phone_no):
         index = self.hash_function(name)
         new_contact = Contact(name, phone_no)
@@ -26,6 +30,7 @@ class HashTable:
             current = current.next
         current.next = new_contact
 
+    # Finds all contacts matching the given name (case-insensitive) within its bucket's chain.
     def search(self, name):
         index = self.hash_function(name)
         current = self.buckets[index]
@@ -36,6 +41,7 @@ class HashTable:
             current = current.next
         return results
 
+    # Removes the contact matching the given name and phone number from its bucket's chain; returns True if removed, False if not found.
     def delete(self, name, phone_no):
         index = self.hash_function(name)
         current = self.buckets[index]
@@ -51,6 +57,7 @@ class HashTable:
             current = current.next
         return False
 
+    # Prints every contact in the phonebook, or a message if it's empty.
     def display(self):
         print("\n----- PHONEBOOK -----")
         empty = True
