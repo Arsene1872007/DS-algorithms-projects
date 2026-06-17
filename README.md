@@ -91,8 +91,8 @@ pip install customtkinter
 
 **Phone Number**
 - Must contain digits only
-- Must be at least 10 digits long
-- Examples: `0781234567`, `07812345678`
+- Must be exactly 10 digits long
+- Example: `0781234567`
 - In the GUI, non-digit characters are stripped automatically as you type
 
 ---
