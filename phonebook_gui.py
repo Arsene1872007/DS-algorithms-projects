@@ -10,7 +10,7 @@ ctk.set_appearance_mode("dark")
 BG_MAIN      = "#080808"
 BG_CARD      = "#121212"
 BG_INPUT     = "#1C1C1C"
-ACCENT       = "#E53935"
+ACCENT       = "#3C2424"
 ACCENT_HOVER = "#FF4D4D"
 DANGER       = "#9A0007"
 TEXT_MAIN    = "#FFFFFF"
