@@ -1,6 +1,6 @@
 # Phonebook Project
 
-A command-line phonebook application built in Python using a **hash table** for fast contact lookups and a **linked list** for collision chaining within each bucket.
+A phonebook application built in Python using a **hash table** for fast contact lookups and **linked list chaining** for collision resolution. Comes with both a command-line interface and a graphical user interface.
 
 ---
 
@@ -8,9 +8,9 @@ A command-line phonebook application built in Python using a **hash table** for 
 
 ```
 phonebook-project/
-├── phonebook_main.py   # Entry point — menu UI and test suite
-├── hashtable.py        # HashTable class — connector between all modules
-├── Linked_List.py      # LinkedList and Node classes — bucket ordering
+├── phonebook_main.py   # Entry point — CLI menu and test suite
+├── phonebook_gui.py    # GUI — built with CustomTkinter
+├── hashtable.py        # HashTable and Contact classes
 ├── Contactlogic.py     # Business logic — add, search, update, delete
 └── validation.py       # Input validation — name and phone number rules
 ```
@@ -18,22 +18,20 @@ phonebook-project/
 ### How the files connect
 
 ```
-phonebook_main.py
-        │
-        ▼
-  Contactlogic.py  ──── validation.py
-        │
-        ▼
-   hashtable.py
-        │
-        ▼
-  Linked_List.py
+phonebook_main.py        phonebook_gui.py
+        │                       │
+        └──────────┬────────────┘
+                   ▼
+            Contactlogic.py ──── validation.py
+                   │
+                   ▼
+             hashtable.py
 ```
 
-- **`phonebook_main.py`** is the entry point. It drives the menu and calls `Contactlogic` functions.
-- **`Contactlogic.py`** owns the business logic (validation checks, duplicate checks, not-found checks). It calls into `HashTable`.
-- **`hashtable.py`** is the connector. It uses `LinkedList` per bucket for chaining and exposes the storage interface that `Contactlogic` depends on.
-- **`Linked_List.py`** handles ordering within each hash bucket (collision resolution via chaining).
+- **`phonebook_main.py`** is the CLI entry point. It creates the `HashTable` instance and drives the menu.
+- **`phonebook_gui.py`** is the GUI entry point. It creates its own `HashTable` instance and handles user interaction visually.
+- **`Contactlogic.py`** owns the business logic — duplicate checks, not-found checks, and validation. It receives the hash table as a parameter and calls its methods.
+- **`hashtable.py`** stores all contacts. Each bucket is a chain of `Contact` nodes linked via `next` pointers.
 - **`validation.py`** enforces name and phone number rules before any contact is stored.
 
 ---
@@ -43,22 +41,34 @@ phonebook_main.py
 - Add a contact (name + phone number)
 - Search for a contact by name
 - Update a contact's phone number
-- Delete a contact
+- Delete a contact by name and phone number
 - Display all contacts
-- Built-in test suite
+- Support for multiple contacts with the same name (different numbers)
+- Built-in test suite (CLI)
+- Real-time digit-only enforcement on phone input (GUI)
 
 ---
 
 ## How to Run
 
-Make sure you have **Python 3** installed, then run:
+Make sure you have **Python 3** installed.
 
+**CLI:**
 ```bash
 python phonebook_main.py
 ```
 
-You will see the following menu:
+**GUI:**
+```bash
+python phonebook_gui.py
+```
 
+The GUI requires `customtkinter`:
+```bash
+pip install customtkinter
+```
+
+**CLI Menu:**
 ```
 ===== PHONEBOOK MENU =====
 1. Add Contact
@@ -75,14 +85,15 @@ You will see the following menu:
 ## Input Rules
 
 **Name**
-- Must not be empty
+- Must not be empty or whitespace only
 - Only letters, spaces (`" "`), and hyphens (`"-"`) are allowed
 - Examples: `Alice`, `Mary-Jane`, `John Smith`
 
 **Phone Number**
-- Must contain at least 10 digits
-- Spaces, dashes (`-`), and plus signs (`+`) are stripped before validation
-- Examples: `0781234567`, `+1 800-555-0199`
+- Must contain digits only
+- Must be at least 10 digits long
+- Examples: `0781234567`, `07812345678`
+- In the GUI, non-digit characters are stripped automatically as you type
 
 ---
 
@@ -90,31 +101,36 @@ You will see the following menu:
 
 ### Hash Table (`hashtable.py`)
 
-The `HashTable` uses a simple hash function:
+The `HashTable` uses a hash function that converts a name into a bucket index:
 
 ```python
 sum(ord(char) for char in key.lower()) % size
 ```
 
-Default size is 10 buckets. Each bucket holds a `LinkedList` for chaining when multiple names hash to the same index.
+Default size is 10 buckets. Each bucket is either `None` or the head of a linked list of `Contact` nodes.
 
-A `_contacts` dictionary (`name.lower()` → `Contact`) stores live object references so that in-place updates (e.g. `contact.phone_no = new_value`) are reflected immediately without re-inserting.
+```
+buckets[0] → Contact("Alice") → None
+buckets[1] → None
+buckets[2] → Contact("Bob") → Contact("Charlie") → None  ← collision chained
+```
 
-### Linked List (`Linked_List.py`)
+### Linked List Chaining (`hashtable.py`)
 
-Each bucket in the hash table is a `LinkedList`. When two contacts hash to the same bucket, they are chained as nodes in that list, preserving insertion order.
+Collisions are resolved by chaining — when two contacts hash to the same bucket, the new contact is appended to the end of the existing chain via the `Contact.next` pointer. No data is ever overwritten.
 
-### Contact (`hashtable.py`)
+### Contact Node (`hashtable.py`)
 
 ```python
 class Contact:
     name: str
     phone_no: str
+    next: Contact   # pointer to next node in the chain
 ```
 
 ---
 
-## Example Usage (via menu)
+## Example Usage (CLI)
 
 ```
 Choose an option: 1
@@ -122,30 +138,39 @@ Enter name: Alice
 Enter phone number: 0781234567
 Contact 'Alice' added successfully
 
+Choose an option: 1
+Enter name: Alice
+Enter phone number: 0700000000
+Contact 'Alice' added successfully   ← same name, different number allowed
+
 Choose an option: 2
 Enter name: Alice
 Name: Alice | Phone: 0781234567
+Name: Alice | Phone: 0700000000
 
 Choose an option: 3
 Enter name: Alice
-Enter new phone number: 0700000000
+Enter current phone number: 0781234567
+Enter new phone number: 0799999999
 Contact 'Alice' updated successfully
 
 Choose an option: 4
 Enter name: Alice
-Contact 'Alice' deleted successfully
+Enter phone number: 0700000000
+Contact 'Alice' with phone '0700000000' deleted successfully
 ```
 
 ---
 
 ## Running the Test Suite
 
-Select option `6` from the menu to run the built-in tests. The suite covers:
+Select option `6` from the CLI menu to run the built-in tests. The suite covers:
 
 - Adding valid contacts
-- Searching for an existing contact
+- Adding a second contact with the same name (different number)
+- Searching for a contact (returns all matches)
 - Updating a contact's phone number
-- Deleting a contact
-- Searching for a deleted contact (should return not found)
+- Deleting one contact by name and phone (other contacts with same name remain)
+- Searching for a deleted contact (returns not found)
 - Adding a contact with an invalid name (empty)
 - Adding a contact with an invalid phone number (too short)
